@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAFEbytes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url("static/Cryptography-980x551.jpg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 60%;
+            max-width: 1200px;
+            height: auto;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
+            background-color: #000000f5;
+            color: white;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0;
+            padding: 10px;
+            text-align: center;
+        }
+
+        #textBox, #keyBox {
+            width: 200px;
+            height: 20px;
+            padding: 10px;
+            font-size: 18px;
+        }
+
+        .options {
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
+        }
+
+        .option {
+            padding: 10px;
+            border: 1px solid #000000b9;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .option:hover {
+            background-color: #44f22df5;
+        }
+
+        .option1.active {
+            background-color: #8c46e0;
+            color: white;
+        }
+
+        .option2.active {
+            background-color: #f64da1;
+            color: rgb(0, 0, 0);
+        }
+
+        .option3.active {
+            background-color: #6666ff;
+            color: rgb(0, 0, 0);
+        }
+
+        .option4.active {
+            background-color: #e08422;
+            color: rgb(0, 0, 0);
+        }
+
+        #enterButtonContainer {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+        }
+
+        #enterButton, #decryptButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+
+        #decryptButton {
+            background-color: #dc3545;
+        }
+
+        #enterButton:hover, #decryptButton:hover {
+            background-color: #0056b3;
+        }
+
+        #decryptButton:hover {
+            background-color: #c82333;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: none;
+        }
+
+        #resultBox {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        #keyContainer {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #optionsContainer {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <header>
+            <h1>SAFEbytes</h1>
+    </div>
+    <div class="container">
+        <h1><b>ENTER THE PLAIN TEXT</b></h1>
+        <br>
+        <input type="text" id="textBox" placeholder="Plain text">
+        <br><br>
+        <div id="optionsContainer">
+            <h2>CHOOSE THE ENCRYPTION TECHNIQUE:</h2>
+            <br>
+            <div class="options">
+                <div class="option option1" onclick="selectOption(this, 'caesar')">Caesar Cipher</div>
+                <div class="option option2" onclick="selectOption(this, 'AES')">AES</div>
+                <div class="option option3" onclick="selectOption(this, 'DES')">DES</div>
+                <div class="option option4" onclick="selectOption(this, 'vigenere')">Vigenere Cipher </div>
+            </div>
+        </div>
+        <div id="keyContainer">
+            <h2>ENTER THE KEY</h2>
+            <br>
+            <input type="text" id="keyBox" placeholder="Key">
+            <br><br>
+        </div>
+        <div id="enterButtonContainer">
+            <button id="enterButton" onclick="submitForm(true)">Encrypt</button>
+            <button id="decryptButton" onclick="submitForm(false)">Decrypt</button>
+        </div>
+        <div id="result">
+            <h2>RESULT TEXT</h2>
+            <div id="resultBox"></div>
+        </div>
+
+        </header>
+    </div>
+    <script>
+        let selectedCipher = null;
+
+        function selectOption(element, cipher) {
+            var options = document.getElementsByClassName("option");
+            for (var i = 0; i < options.length; i++) {
+                options[i].classList.remove("active");
+            }
+            element.classList.add("active");
+            selectedCipher = cipher;
+
+            document.getElementById("keyContainer").style.display = "block";
+
+            document.getElementById("enterButton").style.display = "block";
+            document.getElementById("decryptButton").style.display = "block";
+        }
+        async function submitForm(encrypt) {
+    var textBox = document.getElementById("textBox").value;
+    var keyBox = document.getElementById("keyBox").value;
+
+    if (selectedCipher) {
+        let endpoint = encrypt ? "encrypt" : "decrypt";
+        let payload = encrypt ? { text: textBox, cipher_type: selectedCipher, key: keyBox } : { ciphertext: textBox, cipher_type: selectedCipher, key: keyBox };
+
+        var response = await fetch(`http://127.0.0.1:5000/${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        var data = await response.json();
+        // Access the correct key based on encryption or decryption
+        let resultText = encrypt ? data.encrypted_text : data.decrypted_text;
+        showResult(resultText);
+    } else {
+        alert("Please select an encryption technique.");
+    }
+}
+
+        function showResult(resultText) {
+            var resultDiv = document.getElementById("result");
+            var resultBox = document.getElementById("resultBox");
+            resultBox.innerText = resultText;
+            resultDiv.style.display = "block";
+        }
+    </script>
+</body>
+</html>
